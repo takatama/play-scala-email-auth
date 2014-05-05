@@ -9,4 +9,4 @@ create table token (
 
 # --- !Downs
 
-drop table if exists signup;
+drop table if exists token;
