@@ -15,6 +15,9 @@ trait Secured {
   def SecureAction(f: => String => Request[AnyContent] => Result) = Security.Authenticated(username, onUnauthorized) { user =>
     Action(request => f(user)(request))
   }
+  def SecureAction[A](b: BodyParser[A])(f: => String => Request[A] => Result) = Security.Authenticated(username, onUnauthorized) { user =>
+    Action(b)(request => f(user)(request))
+  }
 }
 
 object Authentication extends Controller {
