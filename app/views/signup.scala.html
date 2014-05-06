@@ -7,7 +7,7 @@
     }
     @helper.form(routes.Authentication.sendSignupEmail) {
       @helper.CSRF.formField
-      @helper.inputText(form("email"), 'placeholder -> "Email", '_label -> "", '_showConstraints -> false)
+      @helper.inputText(form("email"), 'type -> "email", 'placeholder -> "Email", '_label -> "", '_showConstraints -> false)
       <p>
         <button type="submit" id="send-email-button">Send email</button>
       </p>

@@ -40,8 +40,8 @@ trait Secured {
 object Authentication extends Controller {
   val loginForm = Form(
     tuple(
-      "email" -> text,
-      "password" -> text
+      "email" -> email,
+      "password" -> nonEmptyText
     ) verifying ("Invalid email or password", result => result match {
       case (email, password) => User.authenticate(email, password).isDefined
     })
@@ -66,7 +66,7 @@ object Authentication extends Controller {
 
   val signupForm = Form(
     single(
-      "email" -> nonEmptyText
+      "email" -> email
     ) verifying ("The email has been registered", result => result match {
       case(email) => User.findByEmail(email).isEmpty
     })
@@ -143,7 +143,7 @@ object Authentication extends Controller {
 
   val resetForm = Form(
     single(
-      "email" -> nonEmptyText
+      "email" -> email
     ) verifying ("The email has not been registered", result => result match {
       case(email) => User.findByEmail(email).isDefined
     })
