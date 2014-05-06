@@ -1,4 +1,5 @@
 @(form: Form[(String)])(implicit request: RequestHeader)
+@import helper.twitterBootstrap._
 @main("Reset password") {
     <h1>Reset password</h1>
     @form.globalError.map { error =>
@@ -6,9 +7,7 @@
     }
     @helper.form(routes.Authentication.sendResetEmail) {
       @helper.CSRF.formField
-      <p>
-        <input type="email" name="email" placeholder="Email" id="email" value="@form("email").value" />
-      </p>
+      @helper.inputText(form("email"), 'placeholder -> "Email", '_label -> "", '_showConstraints -> false)
       <p>
         <button type="submit" id="send-email-button">Send email</button>
       </p>
