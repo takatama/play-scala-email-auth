@@ -8,6 +8,23 @@ import play.api.data.Forms._
 import models.{User, Token}
 import views._
 
+import play.filters.csrf._
+import scala.concurrent._
+
+object PostAction extends ActionBuilder[Request] {
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[SimpleResult]) = {
+    block(request)
+  }
+  override def composeAction[A](action: Action[A]) = CSRFCheck(action)
+}
+
+object GetAction extends ActionBuilder[Request] {
+  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[SimpleResult]) = {
+    block(request)
+  }
+  override def composeAction[A](action: Action[A]) = CSRFAddToken(action)
+}
+
 trait Secured {
   //FIXME do not save email to cookie
   private def username(request: RequestHeader) = request.session.get("email")
@@ -30,11 +47,11 @@ object Authentication extends Controller {
     })
   )
 
-  def login = Action { implicit request =>
+  def login = GetAction { implicit request =>
     Ok(views.html.login(loginForm))
   }
 
-  def authenticate = Action { implicit request => 
+  def authenticate = PostAction { implicit request => 
     val uri = session.get("uri").getOrElse("/")
     loginForm.bindFromRequest.fold(
       formWithErrors => BadRequest(views.html.login(formWithErrors)),
@@ -44,9 +61,7 @@ object Authentication extends Controller {
   }
 
   def logout = Action {
-    Redirect(routes.Authentication.login).withNewSession.flashing(
-      "success" -> "You've been logged out"
-    )
+    Ok(views.html.logout())
   }
 
   val signupForm = Form(
@@ -57,7 +72,7 @@ object Authentication extends Controller {
     })
   )
 
-  def prepareSignup = Action { implicit request =>
+  def prepareSignup = GetAction { implicit request =>
     Ok(views.html.signup(signupForm))
   }
   
@@ -79,7 +94,7 @@ object Authentication extends Controller {
     Ok(views.html.send(Token.all()))
   }
 
-  def sendSignupEmail = Action { implicit request =>
+  def sendSignupEmail = PostAction { implicit request =>
     signupForm.bindFromRequest.fold(
       formWithErrors => BadRequest(views.html.signup(formWithErrors)),
       email => sendEmailWithToken(email, "signup", "Welcome to Garoku")
@@ -94,12 +109,10 @@ object Authentication extends Controller {
   )
 
   private def redirectToSignup = {
-    Redirect(routes.Authentication.prepareSignup).withNewSession.flashing(
-      "error" -> "Signup url is invalid. Please retry to send email"
-    )
+    BadRequest(views.html.invalid_token())
   }
 
-  def prepareRegister(token: String) = Action { implicit request =>
+  def prepareRegister(token: String) = GetAction { implicit request =>
     Token.findByToken(token) match {
       case Some(token) => {
         Ok(views.html.register(registerForm, token))
@@ -108,7 +121,7 @@ object Authentication extends Controller {
     }
   }
 
-  def register(token: String) = Action { implicit request =>
+  def register(token: String) = PostAction { implicit request =>
     Token.findByToken(token) match {
       case Some(token) => {
         registerForm.bindFromRequest.fold(
@@ -136,11 +149,11 @@ object Authentication extends Controller {
     })
   )
 
-  def prepareReset = Action { implicit request =>
+  def prepareReset = GetAction { implicit request =>
     Ok(views.html.reset(resetForm))
   }
 
-  def sendResetEmail = Action { implicit request =>
+  def sendResetEmail = PostAction { implicit request =>
     resetForm.bindFromRequest.fold(
       formWithErrors => BadRequest(views.html.reset(formWithErrors)),
       email => sendEmailWithToken(email, "reset", "Password reset")

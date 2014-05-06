@@ -7,7 +7,8 @@ libraryDependencies ++= Seq(
   anorm,
   cache,
   "com.github.t3hnar" % "scala-bcrypt_2.10" % "2.3",
-  "com.typesafe" %% "play-plugins-mailer" % "2.1.0"
+  "com.typesafe" %% "play-plugins-mailer" % "2.1.0",
+  filters
 )     
 
 play.Project.playScalaSettings
