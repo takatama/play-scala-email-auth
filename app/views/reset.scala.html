@@ -1,15 +1,11 @@
 @(form: Form[(String)])(implicit request: RequestHeader)
-<html>
-  <head>
-    <title>Reset password</title>
-  </head>
-  <body>
+@main("Reset password") {
+    <h1>Reset password</h1>
     @form.globalError.map { error =>
       <p class="error">@error.message</p>
     }
     @helper.form(routes.Authentication.sendResetEmail) {
       @helper.CSRF.formField
-      <h1>Reset password</h1>
       <p>
         <input type="email" name="email" placeholder="Email" id="email" value="@form("email").value" />
       </p>
@@ -17,5 +13,5 @@
         <button type="submit" id="send-email-button">Send email</button>
       </p>
     }
-  </body>
-</html>
+    <p><a href="/login">Login</a></p>
+}
